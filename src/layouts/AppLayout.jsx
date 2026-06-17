@@ -21,15 +21,21 @@ const styles = {
   container: {
     display: "flex",
     minHeight: "100vh",
+    width: "100%",
+    overflowX: "hidden",
   },
 
   main: {
     flex: 1,
     background: "#f5f7fb",
+    width: "100%",
+    overflowX: "hidden",
   },
 
   content: {
-    padding: "25px",
+    padding: "20px",
+    width: "100%",
+    boxSizing: "border-box",
   },
 };
 
