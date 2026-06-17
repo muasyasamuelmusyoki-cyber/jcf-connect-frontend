@@ -8,14 +8,19 @@ function Visitors() {
 
   const [form, setForm] = useState({
     name: "",
+    maritalStatus: "",
     phone: "",
-    invitedBy: "",
+    email: "",
+    residence: "",
   });
 
   const [editId, setEditId] = useState(null);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = () => {
@@ -27,99 +32,246 @@ function Visitors() {
       updated = visitors.map((v) =>
         v.id === editId ? { ...v, ...form } : v
       );
+
       setEditId(null);
     } else {
       updated = [
         ...visitors,
-        { id: Date.now(), ...form, status: "New" },
+        {
+          id: Date.now(),
+          ...form,
+          status: "New Visitor",
+        },
       ];
     }
 
     setVisitors(updated);
-    localStorage.setItem("visitors", JSON.stringify(updated));
 
-    setForm({ name: "", phone: "", invitedBy: "" });
+    localStorage.setItem(
+      "visitors",
+      JSON.stringify(updated)
+    );
+
+    setForm({
+      name: "",
+      maritalStatus: "",
+      phone: "",
+      email: "",
+      residence: "",
+    });
   };
 
-  const handleEdit = (v) => {
+  const handleEdit = (visitor) => {
     setForm({
-      name: v.name,
-      phone: v.phone,
-      invitedBy: v.invitedBy,
+      name: visitor.name,
+      maritalStatus: visitor.maritalStatus,
+      phone: visitor.phone,
+      email: visitor.email,
+      residence: visitor.residence,
     });
-    setEditId(v.id);
+
+    setEditId(visitor.id);
   };
 
   const handleDelete = (id) => {
-    const updated = visitors.filter((v) => v.id !== id);
+    const updated = visitors.filter(
+      (v) => v.id !== id
+    );
+
     setVisitors(updated);
-    localStorage.setItem("visitors", JSON.stringify(updated));
+
+    localStorage.setItem(
+      "visitors",
+      JSON.stringify(updated)
+    );
   };
 
   return (
     <AppLayout>
-      <h2>👋 Visitors</h2>
+      <h1>👋 Visitors Management</h1>
 
-      <div style={styles.form}>
-        <input
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-        />
+      {/* FORM CARD */}
+      <div style={styles.card}>
+        <h3>
+          {editId
+            ? "Edit Visitor"
+            : "Register Visitor"}
+        </h3>
 
-        <input
-          name="phone"
-          placeholder="Phone"
-          value={form.phone}
-          onChange={handleChange}
-        />
+        <div style={styles.formGrid}>
+          <input
+            name="name"
+            placeholder="Full Name"
+            value={form.name}
+            onChange={handleChange}
+            style={styles.input}
+          />
 
-        <input
-          name="invitedBy"
-          placeholder="Invited By"
-          value={form.invitedBy}
-          onChange={handleChange}
-        />
+          <select
+            name="maritalStatus"
+            value={form.maritalStatus}
+            onChange={handleChange}
+            style={styles.input}
+          >
+            <option value="">
+              Marital Status
+            </option>
+            <option value="Single">
+              Single
+            </option>
+            <option value="Married">
+              Married
+            </option>
+          </select>
 
-        <button onClick={handleSubmit}>
-          {editId ? "Update" : "Add"}
+          <input
+            name="phone"
+            placeholder="Phone Number"
+            value={form.phone}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <input
+            name="email"
+            placeholder="Email Address"
+            value={form.email}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <input
+            name="residence"
+            placeholder="Area of Residence"
+            value={form.residence}
+            onChange={handleChange}
+            style={styles.input}
+          />
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          style={styles.button}
+        >
+          {editId
+            ? "Update Visitor"
+            : "Add Visitor"}
         </button>
       </div>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Invited By</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      {/* TABLE CARD */}
+      <div style={styles.card}>
+        <h3>Visitors List</h3>
 
-        <tbody>
-          {visitors.map((v) => (
-            <tr key={v.id}>
-              <td>{v.name}</td>
-              <td>{v.phone}</td>
-              <td>{v.invitedBy}</td>
-              <td>{v.status}</td>
-              <td>
-                <button onClick={() => handleEdit(v)}>Edit</button>
-                <button onClick={() => handleDelete(v.id)}>Delete</button>
-              </td>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Marital Status</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Residence</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {visitors.map((visitor) => (
+              <tr key={visitor.id}>
+                <td>{visitor.name}</td>
+                <td>{visitor.maritalStatus}</td>
+                <td>{visitor.phone}</td>
+                <td>{visitor.email}</td>
+                <td>{visitor.residence}</td>
+                <td>{visitor.status}</td>
+
+                <td>
+                  <button
+                    style={styles.editBtn}
+                    onClick={() =>
+                      handleEdit(visitor)
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    style={styles.deleteBtn}
+                    onClick={() =>
+                      handleDelete(visitor.id)
+                    }
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </AppLayout>
   );
 }
 
 const styles = {
-  form: { display: "flex", gap: "10px", margin: "20px 0" },
-  table: { width: "100%", background: "white" },
+  card: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "12px",
+    marginBottom: "20px",
+    boxShadow:
+      "0 2px 10px rgba(0,0,0,0.08)",
+  },
+
+  formGrid: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(250px,1fr))",
+    gap: "15px",
+    marginTop: "15px",
+    marginBottom: "20px",
+  },
+
+  input: {
+    padding: "12px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    width: "100%",
+  },
+
+  button: {
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
+
+  editBtn: {
+    background: "#16a34a",
+    color: "#fff",
+    border: "none",
+    padding: "8px 12px",
+    marginRight: "5px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+
+  deleteBtn: {
+    background: "#dc2626",
+    color: "#fff",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
 };
 
 export default Visitors;
