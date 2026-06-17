@@ -9,19 +9,19 @@ function Users() {
     fullName: "",
     username: "",
     password: "",
-    role: "Department User",
+    role: "Admin",
     department: "",
+    status: "Active",
   });
 
   useEffect(() => {
     const savedUsers =
       JSON.parse(localStorage.getItem("users")) || [];
 
-    setUsers(savedUsers);
-
     const savedDepartments =
       JSON.parse(localStorage.getItem("departments")) || [];
 
+    setUsers(savedUsers);
     setDepartments(savedDepartments);
   }, []);
 
@@ -37,8 +37,10 @@ function Users() {
       !form.fullName ||
       !form.username ||
       !form.password
-    )
+    ) {
+      alert("Fill all required fields");
       return;
+    }
 
     const newUser = {
       id: Date.now(),
@@ -58,21 +60,22 @@ function Users() {
       fullName: "",
       username: "",
       password: "",
-      role: "Department User",
+      role: "Admin",
       department: "",
+      status: "Active",
     });
   };
 
   const deleteUser = (id) => {
-    const updated = users.filter(
+    const updatedUsers = users.filter(
       (user) => user.id !== id
     );
 
-    setUsers(updated);
+    setUsers(updatedUsers);
 
     localStorage.setItem(
       "users",
-      JSON.stringify(updated)
+      JSON.stringify(updatedUsers)
     );
   };
 
@@ -81,10 +84,11 @@ function Users() {
       <h1>User Management</h1>
 
       <div style={styles.formCard}>
-        <h3>Create User</h3>
+        <h2>Create User</h2>
 
         <div style={styles.formGrid}>
           <input
+            type="text"
             name="fullName"
             placeholder="Full Name"
             value={form.fullName}
@@ -92,6 +96,7 @@ function Users() {
           />
 
           <input
+            type="text"
             name="username"
             placeholder="Username"
             value={form.username}
@@ -111,18 +116,44 @@ function Users() {
             value={form.role}
             onChange={handleChange}
           >
-            <option>Admin</option>
-            <option>Pastor</option>
-            <option>Church Secretary</option>
-            <option>Finance Officer</option>
-            <option>Department Chair</option>
-            <option>Department Secretary</option>
-            <option>Department Treasurer</option>
-            <option>Department Assistant</option>
-            <option>Department User</option>
+            <optgroup label="Main System">
+              <option value="Admin">
+                Admin
+              </option>
+
+              <option value="Pastor">
+                Pastor
+              </option>
+
+              <option value="Church Secretary">
+                Church Secretary
+              </option>
+
+              <option value="Finance Officer">
+                Finance Officer
+              </option>
+            </optgroup>
+
+            <optgroup label="Department Users">
+              <option value="Department Chair">
+                Department Chair
+              </option>
+
+              <option value="Department Secretary">
+                Department Secretary
+              </option>
+
+              <option value="Department Treasurer">
+                Department Treasurer
+              </option>
+
+              <option value="Department Assistant">
+                Department Assistant
+              </option>
+            </optgroup>
           </select>
 
-          {form.role.includes("Department") && (
+          {form.role.startsWith("Department") && (
             <select
               name="department"
               value={form.department}
@@ -142,6 +173,20 @@ function Users() {
               ))}
             </select>
           )}
+
+          <select
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+          >
+            <option value="Active">
+              Active
+            </option>
+
+            <option value="Disabled">
+              Disabled
+            </option>
+          </select>
         </div>
 
         <button
@@ -151,6 +196,8 @@ function Users() {
           Create User
         </button>
       </div>
+
+      <h2>Registered Users</h2>
 
       <div style={styles.userGrid}>
         {users.map((user) => (
@@ -177,13 +224,18 @@ function Users() {
               </p>
             )}
 
+            <p>
+              <strong>Status:</strong>{" "}
+              {user.status}
+            </p>
+
             <button
               style={styles.deleteBtn}
               onClick={() =>
                 deleteUser(user.id)
               }
             >
-              Delete
+              Delete User
             </button>
           </div>
         ))}
@@ -211,20 +263,21 @@ const styles = {
   },
 
   addBtn: {
-    marginTop: "15px",
-    padding: "10px 20px",
-    border: "none",
-    borderRadius: "8px",
+    marginTop: "20px",
     background: "#2563eb",
     color: "#fff",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
 
   userGrid: {
     display: "grid",
     gridTemplateColumns:
-      "repeat(auto-fit,minmax(280px,1fr))",
+      "repeat(auto-fit,minmax(300px,1fr))",
     gap: "20px",
+    marginTop: "20px",
   },
 
   card: {
@@ -236,12 +289,12 @@ const styles = {
   },
 
   deleteBtn: {
-    marginTop: "10px",
+    marginTop: "15px",
     background: "#dc2626",
     color: "#fff",
     border: "none",
-    padding: "8px 12px",
-    borderRadius: "6px",
+    padding: "10px 15px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
 };
