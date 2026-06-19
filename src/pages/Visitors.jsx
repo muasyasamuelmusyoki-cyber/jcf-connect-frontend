@@ -8,10 +8,13 @@ function Visitors() {
 
   const [form, setForm] = useState({
     name: "",
+    gender: "",
     maritalStatus: "",
     phone: "",
     email: "",
     residence: "",
+    invitedBy: "",
+    followUpStatus: "New Visitor",
   });
 
   const [editId, setEditId] = useState(null);
@@ -40,7 +43,8 @@ function Visitors() {
         {
           id: Date.now(),
           ...form,
-          status: "New Visitor",
+          dateVisited:
+            new Date().toLocaleDateString(),
         },
       ];
     }
@@ -54,20 +58,27 @@ function Visitors() {
 
     setForm({
       name: "",
+      gender: "",
       maritalStatus: "",
       phone: "",
       email: "",
       residence: "",
+      invitedBy: "",
+      followUpStatus: "New Visitor",
     });
   };
 
   const handleEdit = (visitor) => {
     setForm({
       name: visitor.name,
+      gender: visitor.gender,
       maritalStatus: visitor.maritalStatus,
       phone: visitor.phone,
       email: visitor.email,
       residence: visitor.residence,
+      invitedBy: visitor.invitedBy,
+      followUpStatus:
+        visitor.followUpStatus,
     });
 
     setEditId(visitor.id);
@@ -86,11 +97,80 @@ function Visitors() {
     );
   };
 
+  const totalVisitors = visitors.length;
+
+  const maleVisitors = visitors.filter(
+    (v) => v.gender === "Male"
+  ).length;
+
+  const femaleVisitors = visitors.filter(
+    (v) => v.gender === "Female"
+  ).length;
+
+  const marriedVisitors = visitors.filter(
+    (v) => v.maritalStatus === "Married"
+  ).length;
+
+  const singleVisitors = visitors.filter(
+    (v) => v.maritalStatus === "Single"
+  ).length;
+
+  const joinedChurch = visitors.filter(
+    (v) =>
+      v.followUpStatus ===
+      "Joined Church"
+  ).length;
+
+  const returnedVisitors = visitors.filter(
+    (v) =>
+      v.followUpStatus === "Returned"
+  ).length;
+
   return (
     <AppLayout>
       <h1>👋 Visitors Management</h1>
 
-      {/* FORM CARD */}
+      {/* REPORT CARDS */}
+
+      <div style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <h2>{totalVisitors}</h2>
+          <p>Total Visitors</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{maleVisitors}</h2>
+          <p>Male Visitors</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{femaleVisitors}</h2>
+          <p>Female Visitors</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{marriedVisitors}</h2>
+          <p>Married</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{singleVisitors}</h2>
+          <p>Single</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{returnedVisitors}</h2>
+          <p>Returned</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{joinedChurch}</h2>
+          <p>Joined Church</p>
+        </div>
+      </div>
+
+      {/* FORM */}
+
       <div style={styles.card}>
         <h3>
           {editId
@@ -108,6 +188,19 @@ function Visitors() {
           />
 
           <select
+            name="gender"
+            value={form.gender}
+            onChange={handleChange}
+            style={styles.input}
+          >
+            <option value="">
+              Gender
+            </option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+
+          <select
             name="maritalStatus"
             value={form.maritalStatus}
             onChange={handleChange}
@@ -116,17 +209,13 @@ function Visitors() {
             <option value="">
               Marital Status
             </option>
-            <option value="Single">
-              Single
-            </option>
-            <option value="Married">
-              Married
-            </option>
+            <option>Single</option>
+            <option>Married</option>
           </select>
 
           <input
             name="phone"
-            placeholder="Phone Number"
+            placeholder="Phone"
             value={form.phone}
             onChange={handleChange}
             style={styles.input}
@@ -134,7 +223,7 @@ function Visitors() {
 
           <input
             name="email"
-            placeholder="Email Address"
+            placeholder="Email"
             value={form.email}
             onChange={handleChange}
             style={styles.input}
@@ -142,16 +231,44 @@ function Visitors() {
 
           <input
             name="residence"
-            placeholder="Area of Residence"
+            placeholder="Residence"
             value={form.residence}
             onChange={handleChange}
             style={styles.input}
           />
+
+          <input
+            name="invitedBy"
+            placeholder="Invited By"
+            value={form.invitedBy}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <select
+            name="followUpStatus"
+            value={form.followUpStatus}
+            onChange={handleChange}
+            style={styles.input}
+          >
+            <option>
+              New Visitor
+            </option>
+            <option>
+              Contacted
+            </option>
+            <option>
+              Returned
+            </option>
+            <option>
+              Joined Church
+            </option>
+          </select>
         </div>
 
         <button
-          onClick={handleSubmit}
           style={styles.button}
+          onClick={handleSubmit}
         >
           {editId
             ? "Update Visitor"
@@ -159,7 +276,8 @@ function Visitors() {
         </button>
       </div>
 
-      {/* TABLE CARD */}
+      {/* VISITOR TABLE */}
+
       <div style={styles.card}>
         <h3>Visitors List</h3>
 
@@ -167,11 +285,11 @@ function Visitors() {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Marital Status</th>
+              <th>Gender</th>
               <th>Phone</th>
-              <th>Email</th>
               <th>Residence</th>
               <th>Status</th>
+              <th>Date</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -180,11 +298,15 @@ function Visitors() {
             {visitors.map((visitor) => (
               <tr key={visitor.id}>
                 <td>{visitor.name}</td>
-                <td>{visitor.maritalStatus}</td>
+                <td>{visitor.gender}</td>
                 <td>{visitor.phone}</td>
-                <td>{visitor.email}</td>
                 <td>{visitor.residence}</td>
-                <td>{visitor.status}</td>
+                <td>
+                  {visitor.followUpStatus}
+                </td>
+                <td>
+                  {visitor.dateVisited}
+                </td>
 
                 <td>
                   <button
@@ -199,7 +321,9 @@ function Visitors() {
                   <button
                     style={styles.deleteBtn}
                     onClick={() =>
-                      handleDelete(visitor.id)
+                      handleDelete(
+                        visitor.id
+                      )
                     }
                   >
                     Delete
@@ -215,6 +339,23 @@ function Visitors() {
 }
 
 const styles = {
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(180px,1fr))",
+    gap: "15px",
+    marginBottom: "20px",
+  },
+
+  statCard: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "12px",
+    textAlign: "center",
+    boxShadow:
+      "0 2px 10px rgba(0,0,0,0.08)",
+  },
+
   card: {
     background: "#fff",
     padding: "20px",
@@ -229,15 +370,14 @@ const styles = {
     gridTemplateColumns:
       "repeat(auto-fit,minmax(250px,1fr))",
     gap: "15px",
-    marginTop: "15px",
     marginBottom: "20px",
+    marginTop: "15px",
   },
 
   input: {
     padding: "12px",
     border: "1px solid #ddd",
     borderRadius: "8px",
-    width: "100%",
   },
 
   button: {
