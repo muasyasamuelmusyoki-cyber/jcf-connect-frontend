@@ -1,28 +1,35 @@
 import AppLayout from "../layouts/AppLayout";
 import { useState, useEffect } from "react";
 
-function Reports() {
-  const [reports, setReports] = useState(() => {
-    const saved = localStorage.getItem("churchReports");
+function Attendance() {
+  const [records, setRecords] = useState(() => {
+    const saved = localStorage.getItem("attendanceRecords");
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [form, setForm] = useState({
-    title: "",
-    category: "Attendance",
-    description: "",
-    uploadedBy: "",
-  });
-
-  const [selectedReport, setSelectedReport] = useState(null);
   const [editingId, setEditingId] = useState(null);
+
+  const [form, setForm] = useState({
+    date: new Date().toISOString().split("T")[0],
+
+    adultsMen: "",
+    adultsWomen: "",
+    adultsVisitors: "",
+
+    teensBoys: "",
+    teensGirls: "",
+
+    amani: "",
+    furaha: "",
+    imani: "",
+  });
 
   useEffect(() => {
     localStorage.setItem(
-      "churchReports",
-      JSON.stringify(reports)
+      "attendanceRecords",
+      JSON.stringify(records)
     );
-  }, [reports]);
+  }, [records]);
 
   const handleChange = (e) => {
     setForm({
@@ -31,247 +38,367 @@ function Reports() {
     });
   };
 
-  const saveReport = () => {
-    if (
-      !form.title ||
-      !form.description ||
-      !form.uploadedBy
-    ) {
-      alert("Please fill all fields");
-      return;
-    }
+  const saveAttendance = () => {
+    const adults =
+      Number(form.adultsMen || 0) +
+      Number(form.adultsWomen || 0) +
+      Number(form.adultsVisitors || 0);
+
+    const teens =
+      Number(form.teensBoys || 0) +
+      Number(form.teensGirls || 0);
+
+    const children =
+      Number(form.amani || 0) +
+      Number(form.furaha || 0) +
+      Number(form.imani || 0);
+
+    const total = adults + teens + children;
+
+    const attendanceData = {
+      id: editingId || Date.now(),
+      date: form.date,
+
+      adultsMen: Number(form.adultsMen || 0),
+      adultsWomen: Number(form.adultsWomen || 0),
+      adultsVisitors: Number(form.adultsVisitors || 0),
+
+      teensBoys: Number(form.teensBoys || 0),
+      teensGirls: Number(form.teensGirls || 0),
+
+      amani: Number(form.amani || 0),
+      furaha: Number(form.furaha || 0),
+      imani: Number(form.imani || 0),
+
+      adults,
+      teens,
+      children,
+      total,
+    };
 
     if (editingId) {
-      const updated = reports.map((report) =>
-        report.id === editingId
-          ? { ...report, ...form }
-          : report
+      const updated = records.map((record) =>
+        record.id === editingId
+          ? attendanceData
+          : record
       );
 
-      setReports(updated);
+      setRecords(updated);
       setEditingId(null);
-    } else {
-      const newReport = {
-        id: Date.now(),
-        ...form,
-        date: new Date().toLocaleDateString(),
-      };
 
-      setReports([newReport, ...reports]);
+      alert("Attendance Updated");
+    } else {
+      setRecords([
+        attendanceData,
+        ...records,
+      ]);
+
+      alert("Attendance Saved");
     }
 
     setForm({
-      title: "",
-      category: "Attendance",
-      description: "",
-      uploadedBy: "",
+      date: new Date()
+        .toISOString()
+        .split("T")[0],
+
+      adultsMen: "",
+      adultsWomen: "",
+      adultsVisitors: "",
+
+      teensBoys: "",
+      teensGirls: "",
+
+      amani: "",
+      furaha: "",
+      imani: "",
     });
   };
 
-  const editReport = (report) => {
+  const handleEdit = (record) => {
+    setEditingId(record.id);
+
     setForm({
-      title: report.title,
-      category: report.category,
-      description: report.description,
-      uploadedBy: report.uploadedBy,
+      date: record.date,
+
+      adultsMen: record.adultsMen,
+      adultsWomen: record.adultsWomen,
+      adultsVisitors: record.adultsVisitors,
+
+      teensBoys: record.teensBoys,
+      teensGirls: record.teensGirls,
+
+      amani: record.amani,
+      furaha: record.furaha,
+      imani: record.imani,
     });
 
-    setEditingId(report.id);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
-  const deleteReport = (id) => {
-    if (!window.confirm("Delete Report?")) return;
+  const handleDelete = (id) => {
+    const confirmDelete = window.confirm(
+      "Delete this attendance record?"
+    );
 
-    setReports(
-      reports.filter(
-        (report) => report.id !== id
+    if (!confirmDelete) return;
+
+    setRecords(
+      records.filter(
+        (record) => record.id !== id
       )
     );
   };
 
+  const totalAdults = records.reduce(
+    (sum, record) => sum + record.adults,
+    0
+  );
+
+  const totalTeens = records.reduce(
+    (sum, record) => sum + record.teens,
+    0
+  );
+
+  const totalChildren = records.reduce(
+    (sum, record) => sum + record.children,
+    0
+  );
+
+  const grandTotal = records.reduce(
+    (sum, record) => sum + record.total,
+    0
+  );
+
   return (
     <AppLayout>
-      <h1>📊 Reports Center</h1>
+      <h1>📅 Sunday Attendance</h1>
 
-      <div style={styles.formCard}>
+      <div style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <h2>{totalAdults}</h2>
+          <p>Adults</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{totalTeens}</h2>
+          <p>Teens</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{totalChildren}</h2>
+          <p>Children</p>
+        </div>
+
+        <div style={styles.statCard}>
+          <h2>{grandTotal}</h2>
+          <p>Total Attendance</p>
+        </div>
+      </div>
+
+      <div style={styles.card}>
         <h2>
           {editingId
-            ? "Edit Report"
-            : "Create Report"}
+            ? "Edit Attendance"
+            : "Record Attendance"}
         </h2>
 
         <input
-          type="text"
-          name="title"
-          placeholder="Report Title"
-          value={form.title}
+          type="date"
+          name="date"
+          value={form.date}
           onChange={handleChange}
           style={styles.input}
         />
 
-        <select
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          style={styles.input}
-        >
-          <option>Attendance</option>
-          <option>Finance</option>
-          <option>Membership</option>
-          <option>Department</option>
-          <option>Ministry</option>
-        </select>
+        <h3>Adults Church</h3>
 
-        <input
-          type="text"
-          name="uploadedBy"
-          placeholder="Uploaded By"
-          value={form.uploadedBy}
-          onChange={handleChange}
-          style={styles.input}
-        />
+        <div style={styles.grid}>
+          <input
+            type="number"
+            name="adultsMen"
+            placeholder="Men"
+            value={form.adultsMen}
+            onChange={handleChange}
+            style={styles.input}
+          />
 
-        <textarea
-          name="description"
-          placeholder="Report Description"
-          value={form.description}
-          onChange={handleChange}
-          style={styles.textarea}
-        />
+          <input
+            type="number"
+            name="adultsWomen"
+            placeholder="Women"
+            value={form.adultsWomen}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <input
+            type="number"
+            name="adultsVisitors"
+            placeholder="Visitors"
+            value={form.adultsVisitors}
+            onChange={handleChange}
+            style={styles.input}
+          />
+        </div>
+
+        <h3>Teens Church</h3>
+
+        <div style={styles.grid}>
+          <input
+            type="number"
+            name="teensBoys"
+            placeholder="Boys"
+            value={form.teensBoys}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <input
+            type="number"
+            name="teensGirls"
+            placeholder="Girls"
+            value={form.teensGirls}
+            onChange={handleChange}
+            style={styles.input}
+          />
+        </div>
+
+        <h3>Children Church</h3>
+
+        <div style={styles.grid}>
+          <input
+            type="number"
+            name="amani"
+            placeholder="Amani"
+            value={form.amani}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <input
+            type="number"
+            name="furaha"
+            placeholder="Furaha"
+            value={form.furaha}
+            onChange={handleChange}
+            style={styles.input}
+          />
+
+          <input
+            type="number"
+            name="imani"
+            placeholder="Imani"
+            value={form.imani}
+            onChange={handleChange}
+            style={styles.input}
+          />
+        </div>
 
         <button
           style={styles.saveBtn}
-          onClick={saveReport}
+          onClick={saveAttendance}
         >
           {editingId
-            ? "Update Report"
-            : "Save Report"}
+            ? "Update Attendance"
+            : "Save Attendance"}
         </button>
       </div>
 
-      <div style={styles.grid}>
-        {reports.map((report) => (
-          <div
-            key={report.id}
-            style={styles.card}
-          >
-            <h3>{report.title}</h3>
+      <div style={styles.card}>
+        <h2>Attendance History</h2>
 
-            <p>
-              <strong>Category:</strong>{" "}
-              {report.category}
-            </p>
+        <div style={{ overflowX: "auto" }}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Adults</th>
+                <th>Teens</th>
+                <th>Children</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-            <p>
-              <strong>Uploaded By:</strong>{" "}
-              {report.uploadedBy}
-            </p>
+            <tbody>
+              {records.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.date}</td>
+                  <td>{record.adults}</td>
+                  <td>{record.teens}</td>
+                  <td>{record.children}</td>
+                  <td>{record.total}</td>
 
-            <p>
-              <strong>Date:</strong>{" "}
-              {report.date}
-            </p>
+                  <td>
+                    <button
+                      style={styles.editBtn}
+                      onClick={() =>
+                        handleEdit(record)
+                      }
+                    >
+                      Edit
+                    </button>
 
-            <div style={styles.actions}>
-              <button
-                style={styles.viewBtn}
-                onClick={() =>
-                  setSelectedReport(report)
-                }
-              >
-                View
-              </button>
-
-              <button
-                style={styles.editBtn}
-                onClick={() =>
-                  editReport(report)
-                }
-              >
-                Edit
-              </button>
-
-              <button
-                style={styles.deleteBtn}
-                onClick={() =>
-                  deleteReport(report.id)
-                }
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {selectedReport && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h2>
-              {selectedReport.title}
-            </h2>
-
-            <p>
-              <strong>Category:</strong>{" "}
-              {selectedReport.category}
-            </p>
-
-            <p>
-              <strong>Uploaded By:</strong>{" "}
-              {selectedReport.uploadedBy}
-            </p>
-
-            <p>
-              <strong>Date:</strong>{" "}
-              {selectedReport.date}
-            </p>
-
-            <p>
-              <strong>Description:</strong>
-            </p>
-
-            <p>
-              {selectedReport.description}
-            </p>
-
-            <button
-              style={styles.closeBtn}
-              onClick={() =>
-                setSelectedReport(null)
-              }
-            >
-              Close
-            </button>
-          </div>
+                    <button
+                      style={styles.deleteBtn}
+                      onClick={() =>
+                        handleDelete(record.id)
+                      }
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </AppLayout>
   );
 }
 
 const styles = {
-  formCard: {
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(200px,1fr))",
+    gap: "15px",
+    marginBottom: "20px",
+  },
+
+  statCard: {
     background: "#fff",
     padding: "20px",
     borderRadius: "12px",
-    marginBottom: "25px",
+    textAlign: "center",
     boxShadow:
       "0 2px 10px rgba(0,0,0,0.08)",
+  },
+
+  card: {
+    background: "#fff",
+    padding: "20px",
+    marginBottom: "20px",
+    borderRadius: "12px",
+    boxShadow:
+      "0 2px 10px rgba(0,0,0,0.08)",
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(180px,1fr))",
+    gap: "15px",
+    marginBottom: "15px",
   },
 
   input: {
     width: "100%",
     padding: "12px",
-    marginBottom: "12px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-  },
-
-  textarea: {
-    width: "100%",
-    height: "120px",
-    padding: "12px",
-    marginBottom: "12px",
     border: "1px solid #ddd",
     borderRadius: "8px",
   },
@@ -283,46 +410,23 @@ const styles = {
     padding: "12px 20px",
     borderRadius: "8px",
     cursor: "pointer",
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit,minmax(300px,1fr))",
-    gap: "20px",
-  },
-
-  card: {
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow:
-      "0 2px 10px rgba(0,0,0,0.08)",
-  },
-
-  actions: {
-    display: "flex",
-    gap: "10px",
     marginTop: "15px",
-    flexWrap: "wrap",
   },
 
-  viewBtn: {
+  table: {
+    width: "100%",
+    minWidth: "700px",
+    borderCollapse: "collapse",
+  },
+
+  editBtn: {
     background: "#16a34a",
     color: "#fff",
     border: "none",
     padding: "8px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-  },
-
-  editBtn: {
-    background: "#f59e0b",
-    color: "#fff",
-    border: "none",
-    padding: "8px 12px",
-    borderRadius: "6px",
-    cursor: "pointer",
+    marginRight: "5px",
   },
 
   deleteBtn: {
@@ -333,37 +437,6 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
-
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background:
-      "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  modal: {
-    background: "#fff",
-    padding: "25px",
-    borderRadius: "12px",
-    width: "500px",
-    maxWidth: "95%",
-  },
-
-  closeBtn: {
-    marginTop: "15px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
 };
 
-export default Reports;
+export default Attendance;
